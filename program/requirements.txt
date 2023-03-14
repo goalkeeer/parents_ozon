@@ -1,0 +1,4 @@
+selenium==4.7.2
+webdriver-manager
+openpyxl
+xlsxwriter
