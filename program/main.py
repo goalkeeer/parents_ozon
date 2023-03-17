@@ -1,15 +1,19 @@
 import csv
 import traceback
 from collections import defaultdict
+from datetime import datetime
+from decimal import Decimal
 from itertools import islice
+from pathlib import Path
 
 import openpyxl
 import xlsxwriter
 from tqdm import tqdm
 
-from browsers import BrowserException
-from services import TradeLockService
-from utils import write_log, write_interim_result
+from .browsers import BrowserException
+from program import settings
+from .services import TradeLockService
+from .utils import write_log, write_interim_result
 
 
 def get_item_from_products_csv() -> dict:
@@ -18,10 +22,11 @@ def get_item_from_products_csv() -> dict:
         csv_reader = csv.reader(file, delimiter=';')
         for row in islice(csv_reader, 1, None):
             name = row[0]
-            stock_count = row[4]
-            reserve_count = row[5]
-            items[name] = {'stock_count': stock_count,
-                           'reserve_count': reserve_count}
+            items[name] = {
+                'stock_count': row[20],
+                'reserve_count': row[21],
+                'stock_amount': row[22]
+            }
     return items
 
 
@@ -32,10 +37,24 @@ def get_items_from_excel():
     return [worksheet.cell(r, 1).value for r in range(5, worksheet.max_row+1)]
 
 
+def warning_item(values):
+    stock_count = int(values['stock_count']) + int(values['reserve_count'])
+    if stock_count + 5 > int(values['count']):
+        return True
+
+    if Decimal(values['stock_amount']) * Decimal(1 - settings.AMOUNT_DIFFERENCE) < Decimal(values['price']):
+        return True
+
+    return False
+
+
 def write_excel_result(items):
+    Path(settings.RESULT_PATH).mkdir(parents=True, exist_ok=True)
+    time = datetime.now().strftime('%d-%mT%H:%M')
+    file_path = Path(settings.RESULT_PATH, f'result_{time}.xlsx')
     headers = ('Наименование', 'Кол-во на озоне', 'Зарезервировано на озоне',
-               'Кол-во на сайте', 'Цена на сайте')
-    workbook = xlsxwriter.Workbook('result.xlsx', {'constant_memory': True})
+               'Кол-во на сайте', 'Цена на Озоне', 'Цена на сайте')
+    workbook = xlsxwriter.Workbook(file_path, {'constant_memory': True})
     bold = workbook.add_format({'bold': True})
 
     bg_red = workbook.add_format()
@@ -58,8 +77,8 @@ def write_excel_result(items):
             bg = bg_red
         else:
             row = (name, values['stock_count'], values['reserve_count'],
-                   values['count'], values['price'])
-            if int(values['stock_count']) > (int(values['count']) / 1.5):
+                   values['count'], values['stock_amount'], values['price'])
+            if warning_item(values):
                 bg = bg_yellow
         for n, value in enumerate(row):
             worksheet.write(i + 1, n, value, bg)
@@ -67,10 +86,11 @@ def write_excel_result(items):
     workbook.close()
 
 
-if __name__ == '__main__':
+def run_program():
     items = get_item_from_products_csv()
 
-    service = TradeLockService(user, password)
+    auth = (settings.TRADE_LOCK_USERNAME, settings.TRADE_LOCK_PASSWORD)
+    service = TradeLockService(*auth)
     for item_name in tqdm(items.keys()):
         try:
             data = service.get_item_data(item_name)

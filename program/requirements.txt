@@ -1,4 +1,10 @@
+# browser
 selenium==4.7.2
-webdriver-manager
-openpyxl
-xlsxwriter
+webdriver-manager==3.8.5
+
+# xlsx
+openpyxl==3.1.2
+xlsxwriter==3.0.9
+
+# env
+python-dotenv==1.0.0
