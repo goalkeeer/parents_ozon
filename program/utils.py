@@ -1,5 +1,11 @@
+from pathlib import Path
+
+from program import settings
+
+
 def write_log(error_str):
-    log_path = 'logs.log'
+    Path(settings.LOG_PATH).mkdir(parents=True, exist_ok=True)
+    log_path = Path(settings.LOG_PATH, 'logs.log')
 
     with open(log_path, 'a+') as log_file:
         log_file.write("\n")
@@ -9,7 +15,8 @@ def write_log(error_str):
 
 
 def write_interim_result(row):
-    log_path = 'interim_result.txt'
+    Path(settings.LOG_PATH).mkdir(parents=True, exist_ok=True)
+    log_path = Path(settings.LOG_PATH, 'interim_result.txt')
 
     with open(log_path, 'a+') as log_file:
         log_file.write(f"{row}\n")

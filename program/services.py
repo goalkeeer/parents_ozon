@@ -1,12 +1,11 @@
-from browsers import BrowserTradeLock
+from .browsers import BrowserTradeLock
 
 
 class TradeLockService:
 
     def __init__(self, user, password):
         self.browser = BrowserTradeLock()
-        self.auth = (user, password)
-        self.browser.login(*self.auth)
+        self.browser.login(user, password)
 
     def get_item_data(self, item_name: str) -> dict:
         self.browser.make_search(item_name)

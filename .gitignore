@@ -1,5 +1,8 @@
 .DS_Store
 .idea
 .venv
+logs
+results
 
 products.csv
+.env
