@@ -18,7 +18,7 @@ from .utils import write_log, write_interim_result
 
 def get_item_from_products_csv() -> dict:
     items = defaultdict(dict)
-    with open('products.csv') as file:
+    with open('products.csv', encoding="utf8") as file:
         csv_reader = csv.reader(file, delimiter=';')
         for row in islice(csv_reader, 1, None):
             name = row[0]
