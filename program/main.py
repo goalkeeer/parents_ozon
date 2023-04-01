@@ -78,7 +78,15 @@ def write_excel_result(items):
         else:
             row = (name, values['stock_count'], values['reserve_count'],
                    values['count'], values['stock_amount'], values['price'])
-            if warning_item(values):
+            try:
+                is_warning = warning_item(values)
+            except Exception as error:
+                print(error)
+                tb = traceback.format_exc()
+                write_log(str(tb))
+                is_warning = True
+
+            if is_warning:
                 bg = bg_yellow
         for n, value in enumerate(row):
             worksheet.write(i + 1, n, value, bg)

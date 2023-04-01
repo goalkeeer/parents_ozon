@@ -84,7 +84,8 @@ class BrowserTradeLock:
 
     def get_price(self) -> str:
         div_price = self.driver.find_element(by=By.XPATH, value='//*[@id="big-price-info"]/tbody/tr/td[3]/div[1]/div[1]/div[1]/div')
-        return div_price.text.split(' – ')[1]
+        price = div_price.text.split(' – ')[1].replace(' ', '').replace(',', '.')
+        return price
 
     def quit(self):
         self.driver.quit()
