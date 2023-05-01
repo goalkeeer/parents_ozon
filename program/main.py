@@ -21,11 +21,11 @@ def get_item_from_products_csv() -> dict:
     with open('products.csv', encoding="utf8") as file:
         csv_reader = csv.reader(file, delimiter=';')
         for row in islice(csv_reader, 1, None):
-            name = row[0]
+            name = row[0].replace("'", '')
             items[name] = {
-                'stock_count': row[20],
-                'reserve_count': row[21],
-                'stock_amount': row[22]
+                'stock_count': row[20].replace("'", ''),
+                'reserve_count': row[21].replace("'", ''),
+                'stock_amount': row[22].replace("'", '')
             }
     return items
 
@@ -50,7 +50,7 @@ def warning_item(values):
 
 def write_excel_result(items):
     Path(settings.RESULT_PATH).mkdir(parents=True, exist_ok=True)
-    time = datetime.now().strftime('%d-%mT%H:%M')
+    time = datetime.now().strftime('%d-%mT%H_%M')
     file_path = Path(settings.RESULT_PATH, f'result_{time}.xlsx')
     headers = ('Наименование', 'Кол-во на озоне', 'Зарезервировано на озоне',
                'Кол-во на сайте', 'Цена на Озоне', 'Цена на сайте')
